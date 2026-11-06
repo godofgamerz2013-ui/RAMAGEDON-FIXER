@@ -1,0 +1,8 @@
+{
+  "scan_minutes": 20,
+  "ai_minutes": 40,
+  "auto_cleanup": false,
+  "force_termination": false,
+  "min_ram_mb": 35,
+  "model": "gemini-2.5-flash"
+}
