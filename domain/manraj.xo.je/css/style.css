@@ -148,3 +148,48 @@ html.motion-ready .motion-reveal.is-visible{opacity:1;transform:translate3d(0,0,
 .motion-card:hover{transform:perspective(900px) translate3d(0,calc(var(--scroll-y) - 5px),0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))}
 @media(max-width:760px){.motion-depth{transform:translate3d(0,var(--scroll-y),0)}.motion-card{transform:translate3d(0,var(--scroll-y),0)}.motion-card>*{transform:none}}
 @media(prefers-reduced-motion:reduce){html.motion-ready .motion-reveal{opacity:1;transform:none;transition:none}.motion-depth,.motion-card,.motion-card>*{transform:none!important;will-change:auto}}
+
+
+/* VIBRANT NEON VISUAL REFRESH */
+:root{--accent:#65e6ff;--violet:#a78bfa;--pink:#ff65c3;--electric:#7c8cff}
+body{
+ background:
+  radial-gradient(ellipse at 82% 9%,#8b5cf633,transparent 32%),
+  radial-gradient(ellipse at 8% 48%,#06b6d422,transparent 34%),
+  radial-gradient(ellipse at 55% 100%,#ec489922,transparent 34%),#070910;
+}
+.ambient-one{background:#a855f7;opacity:.2}
+.ambient-two{background:#06b6d4;opacity:.18}
+.brand-mark{background:linear-gradient(135deg,#123c50,#38245c 65%,#542044);border:1px solid #65e6ff88;box-shadow:0 0 28px #65e6ff35,0 0 50px #a78bfa20}
+.brand b,.eyebrow{color:#65e6ff}
+.hero h1 span{
+ background:linear-gradient(100deg,#65e6ff 0%,#a78bfa 48%,#ff65c3 100%);
+ -webkit-background-clip:text;background-clip:text;color:transparent;
+ filter:drop-shadow(0 0 22px #a78bfa33)
+}
+.visual-frame{border-color:#65e6ff35;background:linear-gradient(145deg,#171c35ee,#10101dee)}
+.visual-frame:before{background:radial-gradient(circle,#a855f766,transparent 68%)}
+.visual-core{background:linear-gradient(135deg,#07516a,#4c3280 58%,#742c62);border-color:#65e6ff99;box-shadow:0 22px 90px #65e6ff30,inset 0 1px 0 #ffffff99}
+.orbit{border-color:#65e6ff88}.orbit.two{border-color:#ff65c388}
+.visual-tag{border-color:#65e6ff55;background:#101322ee;box-shadow:0 0 22px #65e6ff14}
+.status-dot{background:#65f0b0;box-shadow:0 0 14px #65f0b0}
+.button{background:linear-gradient(110deg,#07516a,#493276 70%,#672c60);border-color:#65e6ff88;color:#f4fbff;box-shadow:0 8px 28px #65e6ff13}
+.button:hover{box-shadow:0 12px 34px #a78bfa30;border-color:#ff65c3}
+.button.secondary{background:linear-gradient(120deg,#ffffff0c,#a78bfa12);border-color:#a78bfa55}
+.card{background:linear-gradient(145deg,#151b2b,#10111c);border-color:#8b91ff30}
+.card:hover{border-color:#65e6ff99;box-shadow:0 18px 45px #65e6ff12,0 0 0 1px #a78bfa18}
+.card .icon,.detail small,.text-link{color:#65e6ff}
+.detail{background:linear-gradient(135deg,#141a2a,#11111b);border-color:#a78bfa35}
+.nav>a.active,.nav-social a:hover,.nav-social a.active,.mobile-dock a.active{background:linear-gradient(110deg,#123448,#30234d);box-shadow:inset 0 0 0 1px #65e6ff55}
+.top-cta{border-color:#65e6ff77;color:#dffaff;box-shadow:0 0 20px #65e6ff12}
+.top-cta:hover{background:linear-gradient(110deg,#123448,#30234d);border-color:#ff65c3}
+.section-index{color:#a78bfa}
+::selection{background:#a78bfa;color:#080910}
+@media(hover:hover){
+ .visual-core{animation:neonFloat 6s ease-in-out infinite}
+ .orbit{animation:orbitPulse 9s ease-in-out infinite alternate}
+ .orbit.two{animation:orbitPulse 11s ease-in-out infinite alternate-reverse}
+}
+@keyframes neonFloat{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@keyframes orbitPulse{from{opacity:.48;filter:drop-shadow(0 0 3px #65e6ff)}to{opacity:1;filter:drop-shadow(0 0 12px #a78bfa)}}
+@media(prefers-reduced-motion:reduce){.visual-core,.orbit,.orbit.two{animation:none}}
