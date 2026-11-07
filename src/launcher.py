@@ -12,16 +12,14 @@ def main():
     base = Path(__file__).resolve().parent
     script = base / "app.py"
 
-    # Prefer pythonw.exe so launching the desktop app does not create a console.
+    # Prefer pythonw.exe so the desktop app has no console window.
     python = Path(sys.executable).with_name("pythonw.exe")
     if not python.exists():
         python = Path(sys.executable)
 
-    subprocess.Popen(
-        [str(python), str(script)],
-        cwd=str(base),
-        close_fds=True,
-    )
+    # Wait for the GUI to close so the TEMP bootstrap does not clean its files
+    # while the application is still running.
+    subprocess.run([str(python), str(script)], cwd=str(base), check=False)
 
 
 if __name__ == "__main__":
