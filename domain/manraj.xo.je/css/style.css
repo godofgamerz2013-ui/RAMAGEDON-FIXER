@@ -253,6 +253,8 @@ body{
 @media(prefers-reduced-motion:reduce){.visual-orb{display:none}}
 
 
+/* SYSTEM THEME: FOLLOW DEVICE PREFERENCE */
+@media (prefers-color-scheme: light) {
 /* FULL LIGHT MODE — VIBRANT MULTICOLOUR EDITION */
 :root{
  color-scheme:light;
@@ -421,4 +423,5 @@ body:before{
 }
 @media(prefers-reduced-motion:reduce){
  .visual-core,.orbit,.orbit.two{animation:none}
+}
 }
