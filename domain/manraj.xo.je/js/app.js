@@ -33,6 +33,10 @@ function setActivePage(name) {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+  const socialActive = ["discord", "steam", "guns"].includes(name);
+  navMore?.classList.toggle("active", socialActive);
+  if (socialActive) moreTrigger?.setAttribute("aria-current", "page");
+  else moreTrigger?.removeAttribute("aria-current");
 }
 
 async function loadPage(name, options = {}) {
