@@ -24,21 +24,77 @@ def scan_processes(min_mb=35):
         except (psutil.NoSuchProcess,psutil.AccessDenied,psutil.ZombieProcess): pass
     return sorted(rows,key=lambda x:x["ram_mb"],reverse=True)
 
-def ask_gemini(processes,api_key,model="gemini-2.5-flash"):
-    if not api_key: raise ValueError("Gemini API key missing")
+def ask_gemini(processes,api_key,model=None):
+    if not api_key:
+        raise ValueError("Gemini API key missing")
     snapshot=processes[:80]
     prompt=("You are a cautious Windows performance advisor. Recommend only clearly idle, nonessential user apps. "
       "Never recommend Windows components, security software, drivers, audio/input, active games, sync/backup, "
       "remote access, accessibility or unknown processes. RAM use alone does not prove idleness. "
       "Return JSON {\"recommendations\":[{\"pid\":123,\"reason\":\"...\"}]}; only use PIDs in snapshot.\n"+
       json.dumps(snapshot))
-    url=f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-    body={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"responseMimeType":"application/json","temperature":0.1}}
-    req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={"Content-Type":"application/json"})
-    with urllib.request.urlopen(req,timeout=30) as r: data=json.loads(r.read())
-    result=json.loads(data["candidates"][0]["content"]["parts"][0]["text"])
+    body={"contents":[{"parts":[{"text":prompt}]}],
+          "generationConfig":{"responseMimeType":"application/json","temperature":0.1}}
+
+    def generate(model_name):
+        url=f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        req=urllib.request.Request(url,data=json.dumps(body).encode(),
+                                   headers={"Content-Type":"application/json"})
+        try:
+            with urllib.request.urlopen(req,timeout=45) as response:
+                return json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            detail=exc.read().decode("utf-8","replace")[:1200]
+            raise RuntimeError(f"Gemini API HTTP {exc.code} for {model_name}: {detail}") from exc
+
+    # Model availability differs by Google AI Studio project and API lifecycle.
+    # Discover models supported by this key instead of assuming a hard-coded model ID.
+    if model:
+        data=generate(model)
+    else:
+        list_url=f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+        try:
+            with urllib.request.urlopen(list_url,timeout=20) as response:
+                catalog=json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            detail=exc.read().decode("utf-8","replace")[:1200]
+            raise RuntimeError(f"Gemini model discovery failed (HTTP {exc.code}): {detail}") from exc
+        candidates=[]
+        for entry in catalog.get("models",[]):
+            methods=entry.get("supportedGenerationMethods",[])
+            name=entry.get("name","")
+            if "generateContent" in methods and name.startswith("models/"):
+                short=name.split("/",1)[1]
+                if "gemini" in short.lower():
+                    candidates.append(short)
+        if not candidates:
+            raise RuntimeError("This Gemini API key has no models supporting generateContent. Check the Google AI Studio project, API access and key restrictions.")
+        # Prefer Flash for speed and cost; fall back to another available Gemini model.
+        candidates.sort(key=lambda name: (
+            0 if "flash" in name.lower() else 1,
+            0 if "latest" in name.lower() else 1,
+            name
+        ))
+        last_error=None
+        data=None
+        for candidate in candidates:
+            try:
+                data=generate(candidate)
+                break
+            except RuntimeError as exc:
+                last_error=exc
+                if "HTTP 404" not in str(exc):
+                    raise
+        if data is None:
+            raise last_error or RuntimeError("No listed Gemini model could generate content.")
+
+    try:
+        result=json.loads(data["candidates"][0]["content"]["parts"][0]["text"])
+    except (KeyError,IndexError,TypeError,ValueError) as exc:
+        raise RuntimeError(f"Gemini returned an unexpected response: {json.dumps(data)[:1200]}") from exc
     valid={p["pid"] for p in processes}
-    return [x for x in result.get("recommendations",[]) if isinstance(x.get("pid"),int) and x["pid"] in valid]
+    return [x for x in result.get("recommendations",[])
+            if isinstance(x.get("pid"),int) and x["pid"] in valid]
 
 def close_pid(pid,name,force=False):
     try:
