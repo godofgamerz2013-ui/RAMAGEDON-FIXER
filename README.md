@@ -4,27 +4,23 @@ A dark, monochrome Windows desktop performance companion for monitoring RAM, CPU
 
 ## One-command online boot (Windows)
 
-Open PowerShell and paste this single command:
+Open PowerShell and paste:
 
 ```powershell
 irm https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1 | iex
 ```
 
-This downloads the latest public `main.zip`, extracts it to a temporary directory, copies the project to `%LOCALAPPDATA%\ApexRig-AI`, and runs the included `boot.ps1`. The project launcher creates/reuses a local `.venv`, installs requirements with `python -m pip`, and starts the app. Python 3.12 (64-bit) is supported for local source runs.
+The bootstrap downloads the latest `main.zip`, extracts it, installs that revision into a timestamped folder under `%LOCALAPPDATA%\ApexRig-AI\versions\`, and runs its `boot.ps1`. Each run gets a fresh folder; existing installs are never deleted or overwritten, so a running app cannot block an update. The project launcher creates/reuses a local `.venv`, installs requirements with `python -m pip`, and starts the app.
+
+Python 3.12 (64-bit) is supported for local source runs. Internet access is required.
 
 **Trust note:** This command downloads and executes a PowerShell script from this public repository. Review [ONE-CLICK-BOOT.ps1](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/blob/main/ONE-CLICK-BOOT.ps1) before running it. Run only when you trust the repository contents.
 
-## Requirements
-
-- Windows 10 or Windows 11, 64-bit
-- Python 3.12 (64-bit), available as `python` on PATH
-- Internet access for downloading the repository and installing Python packages
-
 ## Troubleshooting
 
-- **Missing `src\app.py` or `requirements.txt`:** The bootstrap checks for both and stops with an explicit error. The complete app source must be committed to the repository before boot can work.
-- **Python not found:** Install Python 3.12 (64-bit), enable its PATH option, then reopen PowerShell.
-- **PowerShell or Application Control blocks script/package execution:** Follow your device administrator's approved policy. Do not bypass organizational security controls.
+- **Missing `src\app.py` or `requirements.txt`:** The bootstrap stops with an explicit error. The complete app source must be committed before boot can work.
+- **Python not found:** Install Python 3.12 (64-bit), ensure `python` is on PATH, then reopen PowerShell.
+- **PowerShell or Application Control blocks script/package execution:** Follow your device administrator's approved policy; do not bypass security controls.
 - **Dependency installation fails:** Check internet access and the error reported by `python -m pip`.
 
 ## Features
@@ -67,7 +63,7 @@ Validated release assets will be published on the [Releases page](https://github
 
 ## Project structure
 
-- `ONE-CLICK-BOOT.ps1` — download/extract/install/launch bootstrap
+- `ONE-CLICK-BOOT.ps1` — online download/extract/launch bootstrap
 - `boot.ps1` — local project launcher
 - `src/app.py` — desktop interface
 - `src/engine.py` — monitoring, AI advice and safety checks
