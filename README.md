@@ -1,76 +1,56 @@
 # ApexRig-AI
 
-A dark, monochrome Windows desktop performance companion for monitoring RAM, CPU and processes, with optional Gemini-assisted recommendations.
+A Windows performance dashboard with a dark monochrome GUI, process and memory monitoring, optional Gemini advice, and read-only hardware telemetry.
 
-## One-command online boot (Windows)
+## One-command launch
 
-Open PowerShell and paste:
+Open PowerShell and run:
 
 ```powershell
 irm https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1 | iex
 ```
 
-The bootstrap downloads the latest `main.zip`, extracts it, installs that revision into a timestamped folder under `%LOCALAPPDATA%\ApexRig-AI\versions\`, and runs its `boot.ps1`. Each run gets a fresh folder; existing installs are never deleted or overwritten, so a running app cannot block an update. The project launcher creates/reuses a local `.venv`, installs requirements with `python -m pip`, and starts the app.
+The bootstrap downloads the latest `main` branch on every launch, extracts it under Windows TEMP, creates a temporary Python environment, installs dependencies, and starts the GUI. It removes the temporary app files when the app exits normally. If Windows is powered off unexpectedly, the next launch attempts to remove stale ApexRig-AI run folders.
 
-Python 3.12 (64-bit) is supported for local source runs. Internet access is required.
+**This is TEMP storage, not RAM-only execution.** Windows may retain temporary files after a crash or forced power-off; cleanup is retried on the next launch.
 
-**Trust note:** This command downloads and executes a PowerShell script from this public repository. Review [ONE-CLICK-BOOT.ps1](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/blob/main/ONE-CLICK-BOOT.ps1) before running it. Run only when you trust the repository contents.
+## Automatic startup and updates
+
+In ApexRig-AI, open **Settings → Enable automatic startup and update**. This adds a per-user Windows Run entry containing only a PowerShell command. At each sign-in it fetches the current bootstrap from GitHub, which fetches the latest repository ZIP. Disable the checkbox to remove the startup entry.
+
+Automatic startup requires internet access and Python 3.12 (64-bit) installed and available as `python` on PATH. Startup registration is opt-in.
+
+## Requirements
+
+- Windows 10/11, 64-bit
+- Python 3.12 (64-bit)
+- Internet access for GitHub downloads and Python packages
+- Optional Gemini API key for AI recommendations
+
+## Security and behavior
+
+- Review the bootstrap script before running it: it downloads and executes code from this public repository.
+- Gemini recommendations are advisory. The app does not automatically terminate suggested processes; manual close requires confirmation.
+- Core Windows, security, driver and audio processes are protected by local checks.
+- Hardware telemetry is read-only. No CPU/GPU clock, voltage, BIOS or power-limit changes are performed.
+- The GUI and Python environment run from TEMP. Logs and Gemini credentials are stored separately: logs in the user's local application data and API credentials in Windows Credential Manager (when available).
+- Startup registration writes one value under the current user's Windows Run key; it does not install a persistent application binary.
 
 ## Troubleshooting
 
-- **Missing `src\app.py` or `requirements.txt`:** The bootstrap stops with an explicit error. The complete app source must be committed before boot can work.
-- **Python not found:** Install Python 3.12 (64-bit), ensure `python` is on PATH, then reopen PowerShell.
-- **PowerShell or Application Control blocks script/package execution:** Follow your device administrator's approved policy; do not bypass security controls.
-- **Dependency installation fails:** Check internet access and the error reported by `python -m pip`.
-
-## Features
-
-- RAM, CPU and process monitoring
-- Gemini recommendations (advisory only)
-- Local safety validation before process cleanup
-- Dark, Light and System appearance modes
-- Hardware telemetry
-
-### Safety and limitations
-
-- Gemini does not receive unrestricted authority to terminate processes.
-- Review recommendations before enabling cleanup. Automatic cleanup and force termination should remain disabled unless you understand the consequences.
-- Hardware features are telemetry-only in this version. No CPU/GPU clock, voltage, BIOS or firmware changes are performed.
-- Closing applications can cause unsaved work to be lost.
-
-## Build the Windows EXE
-
-A Windows build must run on Windows; PyInstaller does not cross-compile Windows executables from Linux or macOS.
-
-For a reproducible local build, install Python 3.11 (64-bit), then run from the project root:
-
-```powershell
-py -3.11 -m venv .build-venv
-.\.build-venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt pyinstaller
-pyinstaller --noconfirm --clean --windowed --name ApexRig-AI --paths src src\app.py
-```
-
-The executable is generated under `dist\ApexRig-AI\ApexRig-AI.exe`.
-
-## GitHub Actions build
-
-Open **Actions → Build Windows application → Run workflow**. A successful run uploads a ZIP artifact named `ApexRig-AI-Windows-EXE`. This is a test build artifact, not an installer.
-
-## Releases
-
-Validated release assets will be published on the [Releases page](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/releases).
+- If download fails, check internet access and GitHub availability.
+- If Python is not found, install Python 3.12 (64-bit), enable PATH, and reopen PowerShell.
+- If pip/package installation is blocked by Windows Application Control, use an administrator-approved route; do not bypass device security policy.
+- If some TEMP files remain after a crash, rerun the one-command launcher to trigger stale-folder cleanup.
 
 ## Project structure
 
-- `ONE-CLICK-BOOT.ps1` — online download/extract/launch bootstrap
-- `boot.ps1` — local project launcher
-- `src/app.py` — desktop interface
-- `src/engine.py` — monitoring, AI advice and safety checks
-- `src/startup.py` — Windows startup integration
+- `ONE-CLICK-BOOT.ps1` — online bootstrap, update fetch, TEMP extraction and cleanup
+- `boot.ps1` — temporary venv/dependency launcher
+- `src/app.py` — desktop GUI
+- `src/engine.py` — process, Gemini and hardware engine
 - `requirements.txt` — Python dependencies
-- `.github/workflows/` — automated Windows build
 
-## License
+## Build note
 
-See [LICENSE](LICENSE).
+The online launcher runs Python source from TEMP. A standalone Windows EXE build is a separate workflow and is not required for this launcher.
