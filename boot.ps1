@@ -1,46 +1,38 @@
 $ErrorActionPreference = "Stop"
-
-# ApexRig-AI one-command launcher.
-# Run this script from the extracted repository root.
-
 $ProjectRoot = $PSScriptRoot
 Set-Location $ProjectRoot
 
-if (-not (Test-Path (Join-Path $ProjectRoot "requirements.txt")) -or
-    -not (Test-Path (Join-Path $ProjectRoot "src\app.py"))) {
-    Write-Host "ApexRig-AI source files were not found." -ForegroundColor Red
-    Write-Host "Extract the complete project ZIP, then run .\boot.ps1 from the folder containing requirements.txt and src\app.py."
-    exit 1
+foreach ($required in @("requirements.txt", "src\app.py", "src\engine.py")) {
+    if (-not (Test-Path (Join-Path $ProjectRoot $required))) {
+        throw "Missing project file: $required"
+    }
 }
 
 $Python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $Python) {
-    Write-Host "Python was not found. Install Python 3.12 (64-bit), then reopen PowerShell." -ForegroundColor Red
-    exit 1
+    throw "Python 3.12 (64-bit) was not found on PATH. Install Python and reopen PowerShell."
 }
 
-Write-Host "ApexRig-AI boot sequence" -ForegroundColor Cyan
-Write-Host "Using: $(& python --version)"
-
+Write-Host "ApexRig-AI TEMP boot | $(& python --version)" -ForegroundColor Cyan
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $VenvPython)) {
-    Write-Host "[1/3] Creating local virtual environment..."
+    Write-Host "[1/3] Creating isolated TEMP virtual environment..."
     & python -m venv .venv
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path $VenvPython)) {
-        throw "Could not create .venv. Check Python installation and Windows permissions."
+        throw "Could not create the temporary virtual environment."
     }
 } else {
-    Write-Host "[1/3] Reusing existing .venv"
+    Write-Host "[1/3] Reusing temporary virtual environment."
 }
 
-Write-Host "[2/3] Installing/checking project dependencies..."
+Write-Host "[2/3] Installing/checking dependencies..."
 & $VenvPython -m pip install -r requirements.txt
 if ($LASTEXITCODE -ne 0) {
-    throw "Dependency installation failed. Check network access and Windows Application Control policy."
+    throw "Dependency installation failed. Check internet access and Windows Application Control."
 }
 
-Write-Host "[3/3] Launching ApexRig-AI..."
+Write-Host "[3/3] Starting ApexRig-AI..."
 & $VenvPython src\app.py
 if ($LASTEXITCODE -ne 0) {
-    throw "ApexRig-AI exited with an error (code $LASTEXITCODE)."
+    throw "ApexRig-AI exited with code $LASTEXITCODE."
 }
