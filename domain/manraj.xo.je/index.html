@@ -17,16 +17,21 @@
   <header class="topbar">
     <a class="brand" href="#" data-page="home" aria-label="GOD OF GAMERZ home"><span class="brand-mark">GG</span><span>GOD OF <b>GAMERZ</b></span></a>
     <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
-    <nav class="nav" id="nav">
+    <nav class="nav" id="nav" aria-label="Main navigation">
       <a href="#" data-page="home" class="active">Home</a>
       <a href="#" data-page="description">About</a>
       <a href="#" data-page="projects">Projects</a>
       <a href="#" data-page="setup">Setup</a>
-      <a href="#" data-page="discord">Discord</a>
-      <a href="#" data-page="steam">Steam</a>
-      <a href="#" data-page="guns">guns.lol</a>
+      <div class="nav-more" id="navMore">
+        <button class="nav-more-trigger" type="button" aria-expanded="false" aria-controls="navSocial">Social <span>⌄</span></button>
+        <div class="nav-social" id="navSocial">
+          <a href="#" data-page="discord">Discord <span>↗</span></a>
+          <a href="#" data-page="steam">Steam <span>↗</span></a>
+          <a href="#" data-page="guns">guns.lol <span>↗</span></a>
+        </div>
+      </div>
     </nav>
-    <a class="top-cta" href="#" data-page="contact">Contact ↗</a>
+    <a class="top-cta" href="#" data-page="contact">Let’s talk <span>↗</span></a>
   </header>
   <main id="app" class="page-shell" aria-live="polite">
     <section class="loading"><span class="loader"></span><p>Loading the experience…</p></section>
