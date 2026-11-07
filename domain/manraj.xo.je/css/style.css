@@ -128,3 +128,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 }
 @keyframes navSheetIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.nav.open{animation:none}}
+
+.nav-more.active>.nav-more-trigger{color:#e2efff;background:#172331;box-shadow:inset 0 0 0 1px #83bce433}
+@media(max-width:760px){.nav-more.active>.nav-more-trigger{background:#172331}}
