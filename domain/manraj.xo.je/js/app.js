@@ -156,4 +156,6 @@ document.addEventListener("click", event => {
 document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenus(); });
 window.addEventListener("popstate", () => loadPage(location.hash.slice(1) || "home", { scroll: false }));
 document.getElementById("year").textContent = new Date().getFullYear();
-loadPage(location.hash.slice(1) || "home", { scroll: false });
+// Always start on Home when the site launches, even if an old #guns hash is saved in the URL.
+if (location.hash) history.replaceState({ page: "home" }, "", location.pathname + location.search);
+loadPage("home", { scroll: false });
