@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = $PSScriptRoot
 Set-Location $ProjectRoot
 
-foreach ($required in @("requirements.txt", "src\app.py", "src\engine.py")) {
+foreach ($required in @("requirements.txt", "src\app.py", "src\engine.py", "src\launcher.py", "src\cmd.py")) {
     if (-not (Test-Path (Join-Path $ProjectRoot $required))) {
         throw "Missing project file: $required"
     }
@@ -32,7 +32,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "[3/3] Starting ApexRig-AI..."
-& $VenvPython src\app.py
+& $VenvPython src\launcher.py
 if ($LASTEXITCODE -ne 0) {
     throw "ApexRig-AI exited with code $LASTEXITCODE."
 }
