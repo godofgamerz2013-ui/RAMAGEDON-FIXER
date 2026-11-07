@@ -330,7 +330,7 @@ class ApexApp(tk.Tk):
             return
         import winreg
         key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        command = 'powershell.exe -NoProfile -WindowStyle Hidden -Command "Invoke-RestMethod -Uri ''https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1'' | Invoke-Expression"'
+        command = "powershell.exe -NoProfile -WindowStyle Hidden -Command \"Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1' | Invoke-Expression\""
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as k:
                 if self.startup_var.get():
