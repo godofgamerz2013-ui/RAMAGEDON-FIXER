@@ -2,40 +2,30 @@
 
 A dark, monochrome Windows desktop performance companion for monitoring RAM, CPU and processes, with optional Gemini-assisted recommendations.
 
-## Quick boot (Windows)
+## One-command online boot (Windows)
 
-1. Download **Code → Download ZIP** and extract the complete repository.
-2. Open PowerShell in the extracted folder (the folder containing `requirements.txt` and `src\app.py`).
-3. Run this single command:
+Open PowerShell and paste this single command:
 
 ```powershell
-.\boot.ps1
+irm https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1 | iex
 ```
 
-The launcher creates/reuses `.venv`, installs dependencies using `python -m pip`, and starts the app. No manual environment activation is needed. Python 3.12 (64-bit) is supported for local source runs.
+This downloads the latest public `main.zip`, extracts it to a temporary directory, copies the project to `%LOCALAPPDATA%\ApexRig-AI`, and runs the included `boot.ps1`. The project launcher creates/reuses a local `.venv`, installs requirements with `python -m pip`, and starts the app. Python 3.12 (64-bit) is supported for local source runs.
 
-If PowerShell blocks script execution for this session, run once:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-Then run `.\boot.ps1`.
-
-> **Important:** Extract the ZIP first. Do not run the command from the Downloads folder unless that folder itself contains `boot.ps1`, `requirements.txt`, and `src\app.py`. This repository must contain the application source; the launcher cannot start files that have not been included in the extracted project.
+**Trust note:** This command downloads and executes a PowerShell script from this public repository. Review [ONE-CLICK-BOOT.ps1](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/blob/main/ONE-CLICK-BOOT.ps1) before running it. Run only when you trust the repository contents.
 
 ## Requirements
 
 - Windows 10 or Windows 11, 64-bit
-- Python 3.12 (64-bit) for local source testing
-- Internet access for dependency installation and optional Gemini AI features
+- Python 3.12 (64-bit), available as `python` on PATH
+- Internet access for downloading the repository and installing Python packages
 
 ## Troubleshooting
 
-- **`requirements.txt` or `src\app.py` not found:** You are not in the extracted project root, or the source archive is incomplete. Extract the complete project and confirm both paths exist.
-- **Python not found:** Install Python 3.12 (64-bit), ensure it is on PATH, then reopen PowerShell.
-- **Dependency install blocked:** The launcher invokes pip as a Python module rather than calling `pip.exe`. If Windows Application Control blocks Python package installation too, use an administrator-approved installation route.
-- **Virtual environment permission error:** Close Python processes using this project's `.venv`; remove the project's `.venv` folder only after confirming no process is using it, then rerun the launcher.
+- **Missing `src\app.py` or `requirements.txt`:** The bootstrap checks for both and stops with an explicit error. The complete app source must be committed to the repository before boot can work.
+- **Python not found:** Install Python 3.12 (64-bit), enable its PATH option, then reopen PowerShell.
+- **PowerShell or Application Control blocks script/package execution:** Follow your device administrator's approved policy. Do not bypass organizational security controls.
+- **Dependency installation fails:** Check internet access and the error reported by `python -m pip`.
 
 ## Features
 
@@ -77,7 +67,8 @@ Validated release assets will be published on the [Releases page](https://github
 
 ## Project structure
 
-- `boot.ps1` — one-command Windows launcher
+- `ONE-CLICK-BOOT.ps1` — download/extract/install/launch bootstrap
+- `boot.ps1` — local project launcher
 - `src/app.py` — desktop interface
 - `src/engine.py` — monitoring, AI advice and safety checks
 - `src/startup.py` — Windows startup integration
