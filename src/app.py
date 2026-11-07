@@ -266,32 +266,54 @@ class ApexApp(tk.Tk):
             self.last_scan = time.time()
 
     def refresh(self):
-        try:
-            h = hardware_snapshot()
-            self.rows = scan_processes()
-            # Widget attributes survive page changes, but their Tk widgets do not.
-            if self.page == "Overview":
-                if self.widget_alive(getattr(self, "ram_value", None)):
-                    self.ram_value.configure(text=f"{h['ram_percent']}%")
-                if self.widget_alive(getattr(self, "cpu_value", None)):
-                    self.cpu_value.configure(text=f"{h['cpu_percent']}%")
-                if self.widget_alive(getattr(self, "proc_value", None)):
-                    self.proc_value.configure(text=str(len(self.rows)))
-            if self.page == "Processes" and self.widget_alive(getattr(self, "tree", None)):
-                for item in self.tree.get_children():
-                    self.tree.delete(item)
-                for p in self.rows:
-                    self.tree.insert("", "end", values=(p["pid"], p["name"], p["ram_mb"], p["cpu_pct"], p["status"]))
-            if self.page == "Hardware" and self.widget_alive(getattr(self, "hwtext", None)):
-                self.hwtext.configure(text=(
-                    f"CPU utilization : {h['cpu_percent']}%\nCPU clock        : {h['cpu_mhz'] or 'N/A'} MHz\n"
-                    f"Memory           : {h['ram_used_gb']} / {h['ram_total_gb']} GB ({h['ram_percent']}%)\n"
-                    f"GPU              : {h['gpu']}\n\nREAD-ONLY TELEMETRY"
-                ))
-            self.last_scan = time.time()
-            self.say("System scan completed.")
-        except Exception as exc:
-            self.say("Scan error: " + str(exc))
+        # Process enumeration and hardware probes can take several seconds.
+        # Keep all blocking work off Tk's UI thread.
+        if getattr(self, "_scan_running", False):
+            return
+        self._scan_running = True
+        self.say("System scan started…")
+
+        def worker():
+            try:
+                hardware = hardware_snapshot()
+                processes = scan_processes()
+                self.after(0, lambda: self._finish_refresh(hardware, processes, None))
+            except Exception as exc:
+                error_text = str(exc)
+                try:
+                    self.after(0, lambda msg=error_text: self._finish_refresh(None, None, msg))
+                except tk.TclError:
+                    pass
+
+        threading.Thread(target=worker, daemon=True, name="ApexRig-SystemScan").start()
+
+    def _finish_refresh(self, hardware, processes, error):
+        self._scan_running = False
+        if error:
+            self.say("Scan error: " + error)
+            return
+        self.rows = processes
+        # Update only the widgets belonging to the currently visible page.
+        if self.page == "Overview":
+            if self.widget_alive(getattr(self, "ram_value", None)):
+                self.ram_value.configure(text=f"{hardware['ram_percent']}%")
+            if self.widget_alive(getattr(self, "cpu_value", None)):
+                self.cpu_value.configure(text=f"{hardware['cpu_percent']}%")
+            if self.widget_alive(getattr(self, "proc_value", None)):
+                self.proc_value.configure(text=str(len(self.rows)))
+        elif self.page == "Processes" and self.widget_alive(getattr(self, "tree", None)):
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+            for p in self.rows:
+                self.tree.insert("", "end", values=(p["pid"], p["name"], p["ram_mb"], p["cpu_pct"], p["status"]))
+        elif self.page == "Hardware" and self.widget_alive(getattr(self, "hwtext", None)):
+            self.hwtext.configure(text=(
+                f"CPU utilization : {hardware['cpu_percent']}%\\nCPU clock        : {hardware['cpu_mhz'] or 'N/A'} MHz\\n"
+                f"Memory           : {hardware['ram_used_gb']} / {hardware['ram_total_gb']} GB ({hardware['ram_percent']}%)\\n"
+                f"GPU              : {hardware['gpu']}\\n\\nREAD-ONLY TELEMETRY"
+            ))
+        self.last_scan = time.time()
+        self.say(f"System scan completed — {len(self.rows)} processes inspected.")
 
     def close_selected(self):
         selected = self.tree.selection()
