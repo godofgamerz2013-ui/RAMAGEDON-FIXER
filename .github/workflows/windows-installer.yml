@@ -1,4 +1,4 @@
-name: Build Windows installer
+name: Build Windows application
 
 on:
   workflow_dispatch:
@@ -14,30 +14,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pyinstaller
+          python -m pip install -r requirements.txt pyinstaller
 
       - name: Build standalone application
-        run: pyinstaller --noconfirm --clean --windowed --name ApexRig-AI --paths src src\app.py
+        run: python -m PyInstaller --noconfirm --clean --windowed --name ApexRig-AI --paths src src\app.py
 
-      - name: Install Inno Setup
-        run: choco install innosetup --yes --no-progress
-
-      - name: Build installer
+      - name: Verify executable
         shell: pwsh
         run: |
-          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          & $iscc installer\ApexRig-AI.iss
+          if (-not (Test-Path "dist\ApexRig-AI\ApexRig-AI.exe")) {
+            throw "PyInstaller did not produce dist\ApexRig-AI\ApexRig-AI.exe"
+          }
 
-      - name: Upload installer artifact
+      - name: Package application folder
+        shell: pwsh
+        run: Compress-Archive -Path "dist\ApexRig-AI\*" -DestinationPath "dist\ApexRig-AI-Windows-x64.zip" -Force
+
+      - name: Upload Windows EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ApexRig-AI-Windows-Installer
-          path: dist/ApexRig-AI-Setup-0.5.0.exe
+          name: ApexRig-AI-Windows-EXE
+          path: dist/ApexRig-AI-Windows-x64.zip
           if-no-files-found: error
