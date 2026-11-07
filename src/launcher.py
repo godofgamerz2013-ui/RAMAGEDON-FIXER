@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import tkinter as tk
+from tkinter import messagebox
 from pathlib import Path
 
 PREF_DIR = Path(os.getenv("APPDATA", str(Path.home()))) / "ApexRig-AI"
@@ -50,7 +51,7 @@ def choose_mode():
             try:
                 save_preference(mode)
             except Exception as exc:
-                tk.messagebox.showerror("Could not save preference", str(exc))
+                messagebox.showerror("Could not save preference", str(exc))
                 return
         root.destroy()
 
