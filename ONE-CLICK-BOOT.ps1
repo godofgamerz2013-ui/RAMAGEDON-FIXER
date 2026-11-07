@@ -27,10 +27,22 @@ try {
     Expand-Archive -LiteralPath $ZipPath -DestinationPath $ExtractRoot -Force
     $RepoFolder = Join-Path $ExtractRoot "RAMAGEDON-FIXER-main"
 
-    foreach ($required in @("boot.ps1", "requirements.txt", "src\app.py", "src\engine.py")) {
+    foreach ($required in @("boot.ps1", "requirements.txt", "src\app.py", "src\engine.py", "src\launcher.py", "src\cmd.py")) {
         if (-not (Test-Path (Join-Path $RepoFolder $required))) {
             throw "Repository is missing required file: $required"
         }
+    }
+
+    # If startup was already enabled, make the PowerShell host visible so CMD mode can be used.
+    try {
+        $RunKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+        $Existing = Get-ItemProperty -Path $RunKey -Name "ApexRigAI" -ErrorAction SilentlyContinue
+        if ($null -ne $Existing) {
+            $StartupCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/godofgamerz2013-ui/RAMAGEDON-FIXER/main/ONE-CLICK-BOOT.ps1 | iex"'
+            Set-ItemProperty -Path $RunKey -Name "ApexRigAI" -Value $StartupCommand
+        }
+    } catch {
+        Write-Warning "Could not update the startup command: $($_.Exception.Message)"
     }
 
     Write-Host "[3/4] Launching from TEMP (no permanent application install)..."
