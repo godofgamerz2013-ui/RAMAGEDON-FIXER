@@ -2,7 +2,40 @@
 
 A dark, monochrome Windows desktop performance companion for monitoring RAM, CPU and processes, with optional Gemini-assisted recommendations.
 
-> **Current status:** source project. No compiled Windows installer is published yet. A versioned installer will be attached to **GitHub Releases** after a successful Windows build and validation.
+## Quick boot (Windows)
+
+1. Download **Code → Download ZIP** and extract the complete repository.
+2. Open PowerShell in the extracted folder (the folder containing `requirements.txt` and `src\app.py`).
+3. Run this single command:
+
+```powershell
+.\boot.ps1
+```
+
+The launcher creates/reuses `.venv`, installs dependencies using `python -m pip`, and starts the app. No manual environment activation is needed. Python 3.12 (64-bit) is supported for local source runs.
+
+If PowerShell blocks script execution for this session, run once:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+Then run `.\boot.ps1`.
+
+> **Important:** Extract the ZIP first. Do not run the command from the Downloads folder unless that folder itself contains `boot.ps1`, `requirements.txt`, and `src\app.py`. This repository must contain the application source; the launcher cannot start files that have not been included in the extracted project.
+
+## Requirements
+
+- Windows 10 or Windows 11, 64-bit
+- Python 3.12 (64-bit) for local source testing
+- Internet access for dependency installation and optional Gemini AI features
+
+## Troubleshooting
+
+- **`requirements.txt` or `src\app.py` not found:** You are not in the extracted project root, or the source archive is incomplete. Extract the complete project and confirm both paths exist.
+- **Python not found:** Install Python 3.12 (64-bit), ensure it is on PATH, then reopen PowerShell.
+- **Dependency install blocked:** The launcher invokes pip as a Python module rather than calling `pip.exe`. If Windows Application Control blocks Python package installation too, use an administrator-approved installation route.
+- **Virtual environment permission error:** Close Python processes using this project's `.venv`; remove the project's `.venv` folder only after confirming no process is using it, then rerun the launcher.
 
 ## Features
 
@@ -19,68 +52,11 @@ A dark, monochrome Windows desktop performance companion for monitoring RAM, CPU
 - Hardware features are telemetry-only in this version. No CPU/GPU clock, voltage, BIOS or firmware changes are performed.
 - Closing applications can cause unsaved work to be lost.
 
-## Requirements
+## Build the Windows EXE
 
-- Windows 10 or Windows 11, 64-bit
-- Python **3.12 (64-bit) is supported for local source testing**. The GitHub Actions build uses Python 3.11 for a consistent packaged build.
-- Internet connection for installing Python packages and optional Gemini access
+A Windows build must run on Windows; PyInstaller does not cross-compile Windows executables from Linux or macOS.
 
-## Download and extract the source
-
-Download the repository ZIP using **Code → Download ZIP** and extract it. Open PowerShell in the extracted project folder — the folder must contain `requirements.txt` and a `src` directory.
-
-Do **not** run commands from Downloads unless the project has actually been extracted there. Adjust this example to the folder created by Windows:
-
-```powershell
-cd "$env:USERPROFILE\Downloads\ApexRig-AI"
-Get-ChildItem
-```
-
-## Run from source (Python 3.12)
-
-```powershell
-python --version
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python src\app.py
-```
-
-If activation is blocked for the current PowerShell session:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-```
-
-You can also avoid activation and invoke the environment directly:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe src\app.py
-```
-
-### Troubleshooting
-
-**`py -3.11` says “No suitable Python runtime found”**  
-Python 3.11 is not installed or detected by the launcher. For local testing, use `python -m venv .venv` with your installed Python 3.12. Run `py --list` to inspect detected runtimes.
-
-**`pip.exe` is blocked by Windows Application Control**  
-Use `python -m pip` or `.\.venv\Scripts\python.exe -m pip` instead of calling `pip.exe` directly. If the policy also blocks pip modules, use an administrator-approved installation route; do not attempt to bypass the policy.
-
-**`uninstall-no-record-file` while upgrading pip**  
-Do not upgrade global pip just to run this project. Create the virtual environment first and install requirements using its interpreter. If its pip is damaged, recreate the venv after checking the base Python installation.
-
-**`can't open file ... src\\app.py`**  
-You are not in the extracted project root. Run `Get-ChildItem` and confirm both `requirements.txt` and `src` exist before launching.
-
-Enter your Gemini API key inside the app for AI recommendations. Do not commit API keys, tokens, or personal configuration files.
-
-## Build the Windows EXE yourself
-
-Windows builds must run on Windows; PyInstaller does not cross-compile Windows executables from Linux or macOS.
-
-For the reproducible local build, install Python 3.11 (64-bit), then run from the project root:
+For a reproducible local build, install Python 3.11 (64-bit), then run from the project root:
 
 ```powershell
 py -3.11 -m venv .build-venv
@@ -91,21 +67,17 @@ pyinstaller --noconfirm --clean --windowed --name ApexRig-AI --paths src src\app
 
 The executable is generated under `dist\ApexRig-AI\ApexRig-AI.exe`.
 
-## Build using GitHub Actions
+## GitHub Actions build
 
-1. Open the repository's **Actions** tab.
-2. Select **Build Windows application**.
-3. Click **Run workflow** (or push a version tag beginning with `v`).
-4. Download the `ApexRig-AI-Windows-EXE` artifact after a successful run.
-
-The workflow uploads a ZIP containing the PyInstaller application folder. It is a test build artifact, not an installer.
+Open **Actions → Build Windows application → Run workflow**. A successful run uploads a ZIP artifact named `ApexRig-AI-Windows-EXE`. This is a test build artifact, not an installer.
 
 ## Releases
 
-Validated release assets will be published on the [Releases page](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/releases). Until an asset appears there, download the source and build it using the instructions above.
+Validated release assets will be published on the [Releases page](https://github.com/godofgamerz2013-ui/RAMAGEDON-FIXER/releases).
 
 ## Project structure
 
+- `boot.ps1` — one-command Windows launcher
 - `src/app.py` — desktop interface
 - `src/engine.py` — monitoring, AI advice and safety checks
 - `src/startup.py` — Windows startup integration
