@@ -131,3 +131,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 
 .nav-more.active>.nav-more-trigger{color:#e2efff;background:#172331;box-shadow:inset 0 0 0 1px #83bce433}
 @media(max-width:760px){.nav-more.active>.nav-more-trigger{background:#172331}}
+
+
+/* IGLOO-INSPIRED SCROLL DEPTH / 3D MOTION */
+html.motion-ready .motion-reveal{opacity:0;transform:translate3d(0,34px,0) rotateX(5deg);transform-origin:50% 0;transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);will-change:transform,opacity}
+html.motion-ready .motion-reveal.is-visible{opacity:1;transform:translate3d(0,0,0) rotateX(0)}
+.motion-depth{--scroll-y:0px;--tilt-x:0deg;--tilt-y:0deg;transform:perspective(1200px) translate3d(0,var(--scroll-y),0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));transform-style:preserve-3d;will-change:transform}
+.hero-visual.motion-depth{transform:perspective(1000px) translate3d(0,var(--scroll-y),0)}
+.hero-visual .visual-frame{transform:translateZ(-35px) scale(.98)}
+.hero-visual .orbit{transform:translateZ(35px) rotate(-28deg) scaleX(1.35)}
+.hero-visual .orbit.two{transform:translateZ(65px) rotate(42deg) scaleX(1.15)}
+.hero-visual .visual-core{transform:translateZ(90px) rotate(-8deg)}
+.hero-visual .visual-tag{transform:translateZ(115px)}
+.motion-card{transform:perspective(900px) translate3d(0,var(--scroll-y),0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));transform-style:preserve-3d;transition:border-color .25s,box-shadow .25s,background .25s}
+.motion-card>*{transform:translateZ(18px)}
+.motion-card:hover{transform:perspective(900px) translate3d(0,calc(var(--scroll-y) - 5px),0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))}
+@media(max-width:760px){.motion-depth{transform:translate3d(0,var(--scroll-y),0)}.motion-card{transform:translate3d(0,var(--scroll-y),0)}.motion-card>*{transform:none}}
+@media(prefers-reduced-motion:reduce){html.motion-ready .motion-reveal{opacity:1;transform:none;transition:none}.motion-depth,.motion-card,.motion-card>*{transform:none!important;will-change:auto}}
