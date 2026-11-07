@@ -223,13 +223,27 @@ class ApexApp(tk.Tk):
                  bg=BG, fg=MUTED, wraplength=880, justify="left",
                  font=("Segoe UI", 9)).pack(anchor="w")
 
+    @staticmethod
+    def widget_alive(widget):
+        """Return False for widgets destroyed during page navigation."""
+        if widget is None:
+            return False
+        try:
+            return bool(widget.winfo_exists())
+        except (tk.TclError, RuntimeError):
+            return False
+
     def say(self, msg):
         line = log(msg)
-        if hasattr(self, "activity"):
-            self.activity.configure(state="normal")
-            self.activity.insert("end", line + "\n")
-            self.activity.see("end")
-            self.activity.configure(state="disabled")
+        activity = getattr(self, "activity", None)
+        if self.widget_alive(activity):
+            try:
+                activity.configure(state="normal")
+                activity.insert("end", line + "\n")
+                activity.see("end")
+                activity.configure(state="disabled")
+            except tk.TclError:
+                pass
 
     def set_key(self):
         value = simpledialog.askstring("Gemini API key", "Paste your Gemini API key:", show="*")
@@ -255,16 +269,20 @@ class ApexApp(tk.Tk):
         try:
             h = hardware_snapshot()
             self.rows = scan_processes()
-            if hasattr(self, "ram_value"):
-                self.ram_value.configure(text=f"{h['ram_percent']}%")
-                self.cpu_value.configure(text=f"{h['cpu_percent']}%")
-                self.proc_value.configure(text=str(len(self.rows)))
-            if hasattr(self, "tree") and self.tree.winfo_exists():
+            # Widget attributes survive page changes, but their Tk widgets do not.
+            if self.page == "Overview":
+                if self.widget_alive(getattr(self, "ram_value", None)):
+                    self.ram_value.configure(text=f"{h['ram_percent']}%")
+                if self.widget_alive(getattr(self, "cpu_value", None)):
+                    self.cpu_value.configure(text=f"{h['cpu_percent']}%")
+                if self.widget_alive(getattr(self, "proc_value", None)):
+                    self.proc_value.configure(text=str(len(self.rows)))
+            if self.page == "Processes" and self.widget_alive(getattr(self, "tree", None)):
                 for item in self.tree.get_children():
                     self.tree.delete(item)
                 for p in self.rows:
                     self.tree.insert("", "end", values=(p["pid"], p["name"], p["ram_mb"], p["cpu_pct"], p["status"]))
-            if hasattr(self, "hwtext") and self.hwtext.winfo_exists():
+            if self.page == "Hardware" and self.widget_alive(getattr(self, "hwtext", None)):
                 self.hwtext.configure(text=(
                     f"CPU utilization : {h['cpu_percent']}%\nCPU clock        : {h['cpu_mhz'] or 'N/A'} MHz\n"
                     f"Memory           : {h['ram_used_gb']} / {h['ram_total_gb']} GB ({h['ram_percent']}%)\n"
@@ -292,6 +310,8 @@ class ApexApp(tk.Tk):
         if not self.key:
             return
         self.last_ai = time.time()
+        if not self.widget_alive(getattr(self, "recs", None)):
+            return
         self.recs.delete("1.0", "end")
         self.recs.insert("end", "Gemini is analysing the current process snapshot…")
         def worker():
@@ -300,10 +320,21 @@ class ApexApp(tk.Tk):
                 result = ask_gemini(snapshot, self.key)
                 self.after(0, lambda: self.show_results(snapshot, result))
             except Exception as exc:
-                self.after(0, lambda: self.recs.insert("end", "\n\nAnalysis failed: " + str(exc)))
+                error_text = str(exc)  # Exception variables are cleared after the except block.
+                try:
+                    self.after(0, lambda msg=error_text: self.show_analysis_error(msg))
+                except tk.TclError:
+                    pass
         threading.Thread(target=worker, daemon=True).start()
 
+    def show_analysis_error(self, error_text):
+        if self.page != "Gemini AI" or not self.widget_alive(getattr(self, "recs", None)):
+            return
+        self.recs.insert("end", "\n\nAnalysis failed: " + error_text)
+
     def show_results(self, snapshot, result):
+        if self.page != "Gemini AI" or not self.widget_alive(getattr(self, "recs", None)):
+            return
         names = {p["pid"]: p["name"] for p in snapshot}
         self.recs.delete("1.0", "end")
         if not result:
